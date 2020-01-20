@@ -71,7 +71,6 @@ class Blockchain:
         
         return True
 
-    # Change variables to something for a voting system?
     def addTransaction(self, sender, receiver, vote):
         self.transactions.append({'sender': sender,
                                 'receiver': receiver,
@@ -111,7 +110,6 @@ app = Flask(__name__)
 # Create address for node on Port 5000
 nodeAddress = str(uuid4()).replace('-', '')
 
-# Create the blockchain
 blockchain = Blockchain()
 
 @app.route('/mineBlock', methods = ['GET'])
@@ -121,7 +119,9 @@ def mineBlock():
     prevProof = prevBlock['proof']
     proof = blockchain.proofOfWork(prevProof)
     prevHash = blockchain.hash(prevBlock)
-    blockchain.addTransaction(sender = nodeAddress, receiver = 'Keeper', vote = "Joost") # make the vote data variable
+
+    # make the vote data variable
+    blockchain.addTransaction(sender = nodeAddress, receiver = 'Keeper', vote = "Joost") 
     block = blockchain.createBlock(proof, prevHash)
     response = {'message': 'Congratulations, you just mined a block!',
                 'index': block['index'],
