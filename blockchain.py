@@ -1,7 +1,9 @@
 import datetime
 import hashlib
 import json
+from flask import Flask, jsonify, request
 import requests
+from uuid import uuid4
 from urllib.parse import urlparse
 
 class Blockchain:
@@ -100,3 +102,98 @@ class Blockchain:
             self.chain = longestChain
             return True
         return False
+
+       
+#---------------------------------------------------------------------#
+
+app = Flask(__name__)
+
+# Create address for node on Port 5000
+nodeAddress = str(uuid4()).replace('-', '')
+
+# Create the blockchain
+blockchain = Blockchain()
+
+@app.route('/mineBlock', methods = ['GET'])
+
+def mineBlock():
+    prevBlock = blockchain.getPrevBlock()
+    prevProof = prevBlock['proof']
+    proof = blockchain.proofOfWork(prevProof)
+    prevHash = blockchain.hash(prevBlock)
+    blockchain.addTransaction(sender = nodeAddress, receiver = 'Keeper', vote = "Joost") # make the vote data variable
+    block = blockchain.createBlock(proof, prevHash)
+    response = {'message': 'Congratulations, you just mined a block!',
+                'index': block['index'],
+                'timestamp': block['timestamp'],
+                'proof': block['proof'],
+                'prevHash': block['prevHash'],
+                'transactions': block['transactions']
+                }
+    
+    return jsonify(response), 200
+
+@app.route('/getChain', methods = ['GET'])
+
+def getChain():
+    response = {'chain': blockchain.chain,
+                'length': len(blockchain.chain)
+                }
+    return jsonify(response), 200
+
+@app.route('/isValid', methods = ['GET'])
+
+def isValid():
+    isValid = blockchain.isChainValid(blockchain.chain)
+
+    if isValid:
+        response = {'message': 'All good. The blockchain is valid'}
+    else:
+        response = {'message': 'The blockchain is not valid'}
+        
+    return jsonify(response), 200
+
+@app.route('/addTransaction', methods = ['POST'])
+
+def addTransaction():
+    json = request.get_json()
+    transactionKeys = ['sender', 'receiver', 'vote']
+    if not all (key in json for key in transactionKeys):
+        return 'Some variables of the transaction are missing', 400
+
+    index = blockchain.addTransaction(json['sender'], json['receiver'], json['vote'])
+    response = {'message': f'This transaction will be added to Block {index}'}
+
+    return jsonify(response), 201
+
+@app.route('/connectNode', methods = ['POST'])
+
+def connectNode():
+    json = request.get_json()
+    nodes = json.get('nodes')
+    if nodes is None:
+        return 'No node', 400
+    for node in nodes:
+        blockchain.addNode(node)
+    response = {'message': 'Connected nodes: ',
+                'totalNodes': list(blockchain.nodes)
+                }
+    
+    return jsonify(response), 201
+
+@app.route('/replaceChain', methods = ['GET'])
+
+def replaceChain():
+    isChainReplaced = blockchain.replaceChain()
+
+    if isChainReplaced:
+        response = {'message': 'The chain has been replaced by the longest chain.',
+                    'newChain': blockchain.chain}
+    else:
+        response = {'message': 'The chain is already the longest chain.',
+                    'currentChain': blockchain.chain}
+        
+    return jsonify(response), 200
+
+
+app.run(host = '0.0.0.0', port = 5002)
