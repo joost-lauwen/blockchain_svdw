@@ -70,10 +70,10 @@ class Blockchain:
         return True
 
     # Change variables to something for a voting system?
-    def addTransaction(self, sender, receiver, amount):
+    def addTransaction(self, sender, receiver, vote):
         self.transactions.append({'sender': sender,
                                 'receiver': receiver,
-                                'amount': amount})
+                                'vote': vote})
 
         previousBlock = self.getPrevBlock()
 
