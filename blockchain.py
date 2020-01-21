@@ -28,7 +28,6 @@ class Blockchain:
                 'transactions': self.transactions
                  }
 
-        # Possibility to implemtent persistancy
         self.transactions = []
         self.chain.append(block)
 
@@ -141,7 +140,6 @@ def mineBlock():
     proof = blockchain.proofOfWork(prevProof)
     prevHash = blockchain.hash(prevBlock)
 
-    # make the vote data variable
     block = blockchain.createBlock(proof, prevHash)
     blockchain.persistBlock(block)
     response = {'message': 'Congratulations, you just mined a block!',
