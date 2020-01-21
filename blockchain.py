@@ -142,7 +142,6 @@ def mineBlock():
     prevHash = blockchain.hash(prevBlock)
 
     # make the vote data variable
-    blockchain.addTransaction(sender = nodeAddress, receiver = 'Keeper', vote = "Joost") 
     block = blockchain.createBlock(proof, prevHash)
     blockchain.persistBlock(block)
     response = {'message': 'Congratulations, you just mined a block!',
