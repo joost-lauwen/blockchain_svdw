@@ -1,3 +1,7 @@
+# Name: Joost Lauwen
+# Module: Blockchain
+# Date: 20-01-2019
+
 import datetime
 import hashlib
 import json
@@ -5,11 +9,13 @@ from flask import Flask, jsonify, request
 import requests
 from uuid import uuid4
 from urllib.parse import urlparse
+import pickle
 
 class Blockchain:
 
     def __init__(self):
         self.chain = []
+        self.blocksInChain = []
         self.transactions = []
         self.createBlock(proof = 1, prevHash = '0')
         self.nodes = set()
@@ -102,6 +108,21 @@ class Blockchain:
             return True
         return False
 
+    def persistBlock(self, block):
+        self.blocksInChain.append(block)
+        blockData = 'blockchainData'
+
+        newBlockData = open(blockData, 'wb')
+        pickle.dump(self.blocksInChain,newBlockData)
+        newBlockData.close()
+
+# The code below is just for the teachers to show that the chain is being persisted in the pickle file
+        infile = open(blockData, 'rb')
+        newerBlockData = pickle.load(infile)
+        infile.close()
+
+        print(newBlockData)
+        print(newerBlockData)
        
 #---------------------------------------------------------------------#
 
@@ -123,6 +144,7 @@ def mineBlock():
     # make the vote data variable
     blockchain.addTransaction(sender = nodeAddress, receiver = 'Keeper', vote = "Joost") 
     block = blockchain.createBlock(proof, prevHash)
+    blockchain.persistBlock(block)
     response = {'message': 'Congratulations, you just mined a block!',
                 'index': block['index'],
                 'timestamp': block['timestamp'],
